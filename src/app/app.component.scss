@@ -1,0 +1,9 @@
+:host{
+  display: grid;
+  min-height: 100vh;
+  // grid-auto-rows: max-content;
+  grid-template-rows: auto 1fr auto;
+}
+::ng-deep body{
+  margin: 0;
+}

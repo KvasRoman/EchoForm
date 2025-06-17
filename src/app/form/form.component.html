@@ -1,0 +1,9 @@
+<ng-container *ngIf="dynamicForm">
+    <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+        <ng-container *ngFor="let field of formModel?.fields">
+            <label [for]="field.name">{{field.name}}</label>
+            <input [id]="field.name" [type]="field.type" [formControlName]="field.name"/>
+        </ng-container>
+        <button type="submit">Submit</button>
+    </form>
+</ng-container>
