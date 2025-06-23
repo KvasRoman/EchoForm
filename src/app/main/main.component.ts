@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormComponent } from '../form/form.component';
 import { FormModel } from '../form/form.model';
 
+import { open } from "@tauri-apps/plugin-dialog"
+import { CommandService } from '../services/command.service';
 
 @Component({
   selector: 'app-main',
@@ -10,7 +12,18 @@ import { FormModel } from '../form/form.model';
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
-export class MainComponent {
+export class MainComponent implements OnInit {
+  private commandService = inject(CommandService);
+  ngOnInit(): void {   
+    this.commandService.Execute("/C","echo",["hello"]);
+  }
+  async openFile(){
+    const file = await open({
+      multiple: false,
+      directory: false
+    })
+    console.log("file",file);
+  }
   testForm: FormModel = {
     name: "test",
     fields: [{
@@ -21,4 +34,5 @@ export class MainComponent {
     type: "text"
   }]
   }
+
 }
