@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { FormModel } from './form.model';
+import { FormModel } from '../common/models/form.model';
+import { FieldType } from '../common/types/field.type';
 
 @Component({
   selector: 'app-form',
@@ -12,8 +13,9 @@ import { FormModel } from './form.model';
 })
 export class FormComponent implements OnInit {
   @Input() formModel?: FormModel;
-
   dynamicForm?: FormGroup;
+  
+  fields: {name: string, type: FieldType}[]
   constructor(private fb: FormBuilder) {
     
   }
@@ -27,6 +29,5 @@ export class FormComponent implements OnInit {
   }
   onSubmit(){
     console.log("hello",this.dynamicForm!.getRawValue());
-    
   }
 }

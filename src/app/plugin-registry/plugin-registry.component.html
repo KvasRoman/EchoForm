@@ -1,0 +1,17 @@
+<mat-tree #tree class="tree" [dataSource]="registryDataSource" [treeControl]="treeControl">
+  <mat-nested-tree-node *matTreeNodeDef="let node">
+    {{node.name}}
+  </mat-nested-tree-node>
+  <mat-nested-tree-node *matTreeNodeDef="let node; when hasChild" matTreeNodeToggle>
+    <div class="mat-tree-node">
+      <button matIconButton [attr.aria-label]="'Toggle ' + node.name" matTreeNodeToggle>
+        <mat-icon>{{!treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
+      </button>
+      {{node.name}}
+    </div>
+    <div [class.invisible]="!treeControl.isExpanded(node)"
+        role="group">
+      <ng-container matTreeNodeOutlet></ng-container>
+    </div>
+  </mat-nested-tree-node>
+</mat-tree>

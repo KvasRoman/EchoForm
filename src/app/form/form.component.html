@@ -1,15 +1,16 @@
+<!-- For existing forms -->
 <ng-container *ngIf="dynamicForm">
     <h1>{{this.formModel?.name}}</h1>
     <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()" style="display: grid; grid-template-columns: 1fr;">
         <ng-container *ngFor="let field of formModel?.fields">
-                @if(field.name == 'file'){
-                <label [for]="field.name">{{field.name}}</label>
-                <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;"/>
-                }
-                @else {
-                <label [for]="field.name">{{field.name}}</label>
-                <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;"/>
-                }
+            @if(field.name == 'file'){
+            <label [for]="field.name">{{field.name}}</label>
+            <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" />
+            }
+            @else {
+            <label [for]="field.name">{{field.name}}</label>
+            <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" />
+            }
         </ng-container>
         <button type="submit">Submit</button>
     </form>
