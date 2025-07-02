@@ -16,6 +16,7 @@ import { PluginRegistryComponent } from '../plugin-registry/plugin-registry.comp
 })
 export class MainComponent implements OnInit {
   private commandService = inject(CommandService);
+  
   ngOnInit(): void {   
     this.commandService.Execute("/C","echo",["hello"]);
     this.logDir();

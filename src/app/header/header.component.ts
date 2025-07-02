@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import RegistryService from '../services/registry.service';
 
 @Component({
   selector: 'app-header',
@@ -8,6 +9,13 @@ import { Component, OnInit } from '@angular/core';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit{
+  /**
+   *
+   */
+  constructor(private registryService: RegistryService) {
+      registryService.loadPlugins();
+  }
+
   ngOnInit(): void {
 
   }

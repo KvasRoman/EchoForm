@@ -6,6 +6,19 @@
     "main"
   ],
   "permissions": [
+    "fs:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    "fs:allow-copy-file",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-exists",
+    {
+      "identifier": "fs:scope",
+      "allow": ["**"]
+    },
     "core:default",
     "opener:default",
     "dialog:default",
@@ -15,17 +28,17 @@
         {
           "name": "cmd",
           "cmd": "cmd",
-          "args":true
+          "args": true
         }
       ]
     },
     {
-      "identifier":"shell:allow-spawn",
-       "allow": [
+      "identifier": "shell:allow-spawn",
+      "allow": [
         {
           "name": "cmd",
           "cmd": "cmd",
-          "args":true
+          "args": true
         }
       ]
     }

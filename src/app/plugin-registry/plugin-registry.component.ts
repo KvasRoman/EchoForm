@@ -6,6 +6,7 @@ import { PluginModel } from '../common/models/plugin.model';
 import { RegistryNodeModel } from '../common/models/registry-node.model';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import {MatButtonModule} from '@angular/material/button';
+import TreeService from '../services/tree.service';
 @Component({
   selector: 'app-plugin-registry',
   standalone: true,
@@ -21,21 +22,30 @@ export class PluginRegistryComponent {
   hasChild = (_: number, node: RegistryNodeModel<any>) => !!node.children && node.children.length > 0;
   treeControl = new NestedTreeControl<RegistryNodeModel<any>>(node => node.children)
   
-  constructor() {
+  onLeafClick($event: any,node: RegistryNodeModel<any>){
+    event?.preventDefault();
+    event?.stopPropagation();
+    let branch = this.treeService.getBranch(this.registry, node);
+    console.log("branch", branch);
+  }
+  constructor(private treeService: TreeService) {
     this.registry = REGISTRY_EXAMPLE;
   }
 
 }
 
-const REGISTRY_EXAMPLE = {
+const REGISTRY_EXAMPLE: RegistryModel = {
       plugins: [
         {
+          id: "hello1",
           name: "hello",
           modules: [
             {
+              id: "world1",
               name: "world",
               forms: [
                 {
+                  id: "temp1",
                   name: "temp1",
                   fields: []
                 }
@@ -53,9 +63,11 @@ const REGISTRY_EXAMPLE = {
           description: ""
         },
         {
+          id: "hello2",
           name: "hello",
           modules: [
             {
+              id: "world2",
               name: "world",
               forms: [],
             }
