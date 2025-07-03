@@ -5,5 +5,6 @@ import { RegistryNodeModel } from "./registry-node.model";
 export interface PluginModel extends RegistryNodeModel<ModuleModel>{
     name: string,
     description: string,
+    executable?: string,
     modules: ModuleModel[]
 }

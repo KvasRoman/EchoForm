@@ -7,6 +7,8 @@ import { RegistryNodeModel } from '../common/models/registry-node.model';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import {MatButtonModule} from '@angular/material/button';
 import TreeService from '../services/tree.service';
+import RegistryService from '../services/registry.service';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-plugin-registry',
   standalone: true,
@@ -16,6 +18,7 @@ import TreeService from '../services/tree.service';
 })
 export class PluginRegistryComponent {
   registry: RegistryModel;
+  registrySub: Observable<RegistryModel>;
   get registryDataSource(): PluginModel[]{
     return this.registry.plugins;
   }
@@ -28,8 +31,9 @@ export class PluginRegistryComponent {
     let branch = this.treeService.getBranch(this.registry, node);
     console.log("branch", branch);
   }
-  constructor(private treeService: TreeService) {
-    this.registry = REGISTRY_EXAMPLE;
+  constructor(private treeService: TreeService, private registryService: RegistryService) {
+    this.registrySub = registryService.registry;
+    this.registrySub.subscribe(registry => this.registry = registry);
   }
 
 }

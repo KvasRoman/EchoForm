@@ -13,7 +13,9 @@ export class HeaderComponent implements OnInit{
    *
    */
   constructor(private registryService: RegistryService) {
-      registryService.loadPlugins();
+      registryService.loadDirs().then(value => {
+        registryService.loadRegistry();
+      });
   }
 
   ngOnInit(): void {
