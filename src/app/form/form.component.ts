@@ -5,11 +5,12 @@ import { FormModel } from '../common/models/form.model';
 import { FieldType } from '../common/types/field.type';
 import { Observable } from 'rxjs';
 import { FormService } from '../services/form.service';
+import { FileInputComponent } from '../common/file-input/file-input.component';
 
 @Component({
   selector: 'app-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, FileInputComponent],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
