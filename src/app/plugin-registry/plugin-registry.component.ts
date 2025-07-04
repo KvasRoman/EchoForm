@@ -9,6 +9,9 @@ import {MatButtonModule} from '@angular/material/button';
 import TreeService from '../services/tree.service';
 import RegistryService from '../services/registry.service';
 import { Observable } from 'rxjs';
+import { FormService } from '../services/form.service';
+import { Router } from '@angular/router';
+import { FormModel } from '../common/models/form.model';
 @Component({
   selector: 'app-plugin-registry',
   standalone: true,
@@ -29,9 +32,12 @@ export class PluginRegistryComponent {
     event?.preventDefault();
     event?.stopPropagation();
     let branch = this.treeService.getBranch(this.registry, node);
+    this.formService.setActiveBranch(branch!)
+    this.formService.setActiveForm((node as FormModel));
+    this.router.navigate(['form']);
     console.log("branch", branch);
   }
-  constructor(private treeService: TreeService, private registryService: RegistryService) {
+  constructor(private treeService: TreeService, private registryService: RegistryService, private formService: FormService, private router: Router) {
     this.registrySub = registryService.registry;
     this.registrySub.subscribe(registry => this.registry = registry);
   }

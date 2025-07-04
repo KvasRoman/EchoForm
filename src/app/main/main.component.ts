@@ -5,12 +5,14 @@ import { FormModel } from '../common/models/form.model';
 import { open } from "@tauri-apps/plugin-dialog"
 import { CommandService } from '../services/command.service';
 import { PluginRegistryComponent } from '../plugin-registry/plugin-registry.component';
+import { RouterModule, RouterOutlet } from '@angular/router';
+
 
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [PluginRegistryComponent],
+  imports: [RouterOutlet],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -24,16 +26,5 @@ export class MainComponent implements OnInit {
   async logDir(){
     
   }
-  
-  // testForm: FormModel = {
-  //   name: "test",
-  //   fields: [{
-  //     name: "someNumber",
-  //     type: "number"
-  //   },
-  // {name: "someText",
-  //   type: "text"
-  // }]
-  // }
 
 }

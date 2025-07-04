@@ -1,5 +1,5 @@
 <!-- For existing forms -->
-<ng-container *ngIf="dynamicForm">
+<ng-container *ngIf="dynamicForm && formModel">
     <h1>{{this.formModel?.name}}</h1>
     <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()" style="display: grid; grid-template-columns: 1fr;">
         <ng-container *ngFor="let field of formModel?.fields">
