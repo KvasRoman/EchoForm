@@ -27,13 +27,13 @@ export class FileInputComponent implements ControlValueAccessor {
   }
   setDisabledState?(isDisabled: boolean): void { }
 
-  private onChange: (value: string) => void;
-  private onTouched: () => void;
+  private onChange: (value: string) => void =  (value) => {};
+  private onTouched: () => void = () => {};
   @Input() isOutput: boolean;
   @Input() type: "path" | "content";
-  @Output() data: string;
+  data: string;
 
-  async open() {
+  async openFile() {
 
     if (this.isOutput) {
       let file = await save({
@@ -44,7 +44,9 @@ export class FileInputComponent implements ControlValueAccessor {
           }
         ]
       });
-      if(!file) return;
+      if(!file || file == '') {
+        return;
+      }
       this.data = file;
       this.onChange(this.data);
       
@@ -53,11 +55,13 @@ export class FileInputComponent implements ControlValueAccessor {
         multiple: false,
         directory: false
       })
-      if(!file) return;
+      if(!file || file == '') {
+        return;
+      }
       switch (this.type) {
         case "path": this.data = file!; break;
         case "content": this.data = await this.readFile(file!); break;
-        default: throw new NotFoundError(`file input type: ${this.type} is not supported yet`);
+        default: throw new Error(`file input type: ${this.type} is not supported yet`);
       }
       this.onChange(this.data);
     }

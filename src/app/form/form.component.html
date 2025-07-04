@@ -5,7 +5,14 @@
         <ng-container *ngFor="let field of formModel?.fields">
             @if(field.type == 'file' || field.type == 'file-output'){
             <label [for]="field.name">{{field.name}}</label>
-            <app-file-input [id]="field.name" [isOutput]="field.type == 'file-output'" type="path" [formControlName]="field.name" style="margin-bottom: 10px;"></app-file-input>
+            @if(field.type == 'file-output'){
+            <app-file-input [id]="field.name" [isOutput]="true" type="path" [formControlName]="field.name"
+                style="margin-bottom: 10px;"></app-file-input>
+            }
+            @else {
+            <app-file-input [id]="field.name" [isOutput]="false" type="path" [formControlName]="field.name"
+                style="margin-bottom: 10px;"></app-file-input>
+            }
             <!-- <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" /> -->
             }
             @else {

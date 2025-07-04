@@ -19,12 +19,7 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 export class MainComponent implements OnInit {
   private commandService = inject(CommandService);
   
-  ngOnInit(): void {   
-    this.commandService.Execute("/C","echo",["hello"]);
-    this.logDir();
-  }
-  async logDir(){
-    
+  ngOnInit(): void {
   }
 
 }

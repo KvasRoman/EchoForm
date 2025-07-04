@@ -26,7 +26,9 @@ export default class RegistryService {
   get activeFrom(): Observable<FormModel> {
     return this._formSubject.asObservable();
   }
-
+  get pluginDirectory(): string{
+    return this.pluginsDir;
+  }
   constructor() {
     this._registrySubject = new BehaviorSubject<RegistryModel>(REGISTRY_EXAMPLE);
   }
