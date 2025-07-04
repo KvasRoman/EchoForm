@@ -5,7 +5,8 @@ import { FormModel } from '../common/models/form.model';
 import { FieldType } from '../common/types/field.type';
 import { Observable } from 'rxjs';
 import { FormService } from '../services/form.service';
-import { FileInputComponent } from '../common/file-input/file-input.component';
+import { FileInputComponent } from '../common/file/file.component';
+import { CommandService } from '../services/command.service';
 
 @Component({
   selector: 'app-form',
@@ -20,7 +21,7 @@ export class FormComponent implements OnInit {
   activeFormSub: Observable<FormModel | null>;
   fields: {name: string, type: FieldType}[]
 
-  constructor(private fb: FormBuilder, private formService: FormService) {
+  constructor(private fb: FormBuilder, private formService: FormService, private commandService: CommandService) {
     this.activeFormSub = this.formService.activeFrom;
     this.activeFormSub.subscribe(form => {
       this.formModel = form;

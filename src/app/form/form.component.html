@@ -3,9 +3,9 @@
     <h1>{{this.formModel.name}}</h1>
     <form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()" style="display: grid; grid-template-columns: 1fr;">
         <ng-container *ngFor="let field of formModel?.fields">
-            @if(field.type == 'file'){
+            @if(field.type == 'file' || field.type == 'file-output'){
             <label [for]="field.name">{{field.name}}</label>
-            <app-file-input [id]="field.name" type="path" [formControlName]="field.name" style="margin-bottom: 10px;"></app-file-input>
+            <app-file-input [id]="field.name" [isOutput]="field.type == 'file-output'" type="path" [formControlName]="field.name" style="margin-bottom: 10px;"></app-file-input>
             <!-- <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" /> -->
             }
             @else {

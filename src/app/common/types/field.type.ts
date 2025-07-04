@@ -1,1 +1,1 @@
-export type FieldType = "text" | "number" | "file";
+export type FieldType = "text" | "number" | "file" | "file-output";
