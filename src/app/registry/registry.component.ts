@@ -16,10 +16,10 @@ import { FormModel } from '../common/models/form.model';
   selector: 'app-plugin-registry',
   standalone: true,
   imports: [MatTreeModule, MatIconModule, MatButtonModule],
-  templateUrl: './plugin-registry.component.html',
-  styleUrl: './plugin-registry.component.scss'
+  templateUrl: './registry.component.html',
+  styleUrl: './registry.component.scss'
 })
-export class PluginRegistryComponent {
+export class RegistryComponent {
   registry: RegistryModel;
   registrySub: Observable<RegistryModel>;
   get registryDataSource(): PluginModel[]{
