@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReaderComponent } from './reader.component';
+import { PipelineReaderComponent } from './reader.component';
 
 describe('ReaderComponent', () => {
-  let component: ReaderComponent;
-  let fixture: ComponentFixture<ReaderComponent>;
+  let component: PipelineReaderComponent;
+  let fixture: ComponentFixture<PipelineReaderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReaderComponent]
+      imports: [PipelineReaderComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(ReaderComponent);
+    fixture = TestBed.createComponent(PipelineReaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

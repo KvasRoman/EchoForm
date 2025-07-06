@@ -1,1 +1,38 @@
-<p>reader works!</p>
+<div class="common-variables">
+    <div class="wrapper">
+        <ul>
+            <li></li>
+        </ul>
+    </div>
+</div>
+<form action="">
+    @for(sequenceItem of pipeline.sequence; track $index){
+    <!-- Need to replace with better version of dynamic fileds -->
+    @if(sequenceItem.formId){
+    <div>
+        <h3>{{sequenceItem.plugin}} -> {{sequenceItem.module}} -> {{sequenceItem.form}}</h3>
+        @for (field of getFormFields(sequenceItem.formId); track $index) {
+        @if(field.type == 'file' || field.type == 'file-output'){
+        <label [for]="field.name">{{field.name}}</label>
+        @if(field.type == 'file-output'){
+        <app-file-input [id]="field.name" [isOutput]="true" type="path" [formControlName]="field.name"
+            style="margin-bottom: 10px;"></app-file-input>
+        }
+        @else {
+        <app-file-input [id]="field.name" [isOutput]="false" type="path" [formControlName]="field.name"
+            style="margin-bottom: 10px;"></app-file-input>
+        }
+        <!-- <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" /> -->
+        }
+        @else {
+        <label [for]="field.name">{{field.name}}</label>
+        <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" />
+        }
+        }
+    </div>
+    }
+    @else {
+    Error - form fields not found
+    }
+    }
+</form>

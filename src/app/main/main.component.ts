@@ -4,7 +4,7 @@ import { FormModel } from '../common/models/form.model';
 
 import { open } from "@tauri-apps/plugin-dialog"
 import { CommandService } from '../services/command.service';
-import { PluginRegistryComponent } from '../plugin-registry/plugin-registry.component';
+import { RegistryComponent } from '../registry/registry.component';
 import { RouterModule, RouterOutlet } from '@angular/router';
 
 

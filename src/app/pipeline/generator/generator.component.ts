@@ -7,6 +7,6 @@ import { Component } from '@angular/core';
   templateUrl: './generator.component.html',
   styleUrl: './generator.component.css'
 })
-export class GeneratorComponent {
-
+export class PipelineGeneratorComponent {
+  
 }

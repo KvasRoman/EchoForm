@@ -71,7 +71,6 @@ export default class RegistryService {
   private getFileName(filename: string) {
     return filename.replace(/\.[^/.]+$/, '');
   }
-
   private async createRegistry(plugins: DirEntry[]): Promise<RegistryModel> {
     const registry: RegistryModel = {
       plugins: []
