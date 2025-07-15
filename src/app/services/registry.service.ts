@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { documentDir } from '@tauri-apps/api/path';
 import { readTextFile, writeTextFile, BaseDirectory, readDir, DirEntry } from '@tauri-apps/plugin-fs';
 
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,30 +10,28 @@ import { RegistryModel } from "../common/models/registry.model";
 import { PluginModel } from "../common/models/plugin.model";
 import { RegistryNodeModel } from "../common/models/registry-node.model";
 import { FormModel } from "../common/models/form.model";
+import { PipelineModel } from "../common/models/pipeline/pipeline.model";
+import TreeService from "./tree.service";
 
 @Injectable({ providedIn: "root" })
 export default class RegistryService {
-  private _plugins = []
-  private _pipelines = []
   private readonly pluginFolderName = "echoform-plugins";
   private readonly pipelineFolderName = "echoform-pipelines";
   private pluginsDir: string;
+  private pipelinesDir: string;
   private _registrySubject: BehaviorSubject<RegistryModel>;
-  private _formSubject: BehaviorSubject<FormModel>;
   get registry(): Observable<RegistryModel> {
     return this._registrySubject.asObservable();
-  }
-  get activeFrom(): Observable<FormModel> {
-    return this._formSubject.asObservable();
   }
   get pluginDirectory(): string{
     return this.pluginsDir;
   }
-  constructor() {
+  constructor(private treeService: TreeService) {
     this._registrySubject = new BehaviorSubject<RegistryModel>(REGISTRY_EXAMPLE);
   }
   async loadDirs() {
     this.pluginsDir = `${await documentDir()}/${this.pluginFolderName}`;
+    this.pipelinesDir = `${await documentDir()}/${this.pipelineFolderName}`;
   }
   async loadRegistry() {
     const dirs = (await readDir(this.pluginsDir)).filter(entity => !entity.isFile);
@@ -44,12 +42,86 @@ export default class RegistryService {
     for (const plugin of registry.plugins) {
       this.injectIds(plugin);
     }
+    this.loadPipelines(registry);
+
     this.updatePluginFiles(registry);
     console.log("registry", registry);
     this._registrySubject.next(registry);
 
     console.log("dirr", dirs);
   }
+// For pipelines
+  private async loadPipelines(registry: RegistryModel){
+    const pipelineFiles = (await readDir(this.pipelinesDir)).filter(
+      file => {
+        if (file.isFile) {
+          let filename = file.name.toLowerCase();
+          let isProperFileType = filename.includes(".json");
+          return isProperFileType;
+        }
+        else {
+          return false;
+        }
+      });
+    const pipelineFilePaths = pipelineFiles.map(file => `${this.pipelinesDir}/${file.name}`);
+    const pipelines = await Promise.all(pipelineFilePaths.map(
+      async file => await this.createPipeline(file)
+    ));
+    const validPipelines = this.getValidPipelines(pipelines,registry);
+    const alteredPipelines = validPipelines.map(pipeline => this.injectFormIds(registry, pipeline))
+    registry.pipelines = alteredPipelines;
+  }
+  private async createPipeline(file: string): Promise<PipelineModel>{
+    const json = await readTextFile(file);
+    const pipeline = JSON.parse(json) as PipelineModel;
+    return pipeline;
+  }
+  private getValidPipelines(pipelines: PipelineModel[], registry: RegistryModel): PipelineModel[]{
+    pipelines.filter(pipeline => {
+      const pluginsExist = pipeline.plugins.filter(
+        pipelinePlugin => registry.plugins.find(
+          registryPlugin => pipelinePlugin == registryPlugin.name)
+        ).length == pipeline.plugins.length;
+      
+      const sequenceFormExists = pipeline.sequence.filter(
+        sequenceItem => {
+        return this.treeService.getBranchElements(registry, 
+          [sequenceItem.plugin,sequenceItem.module,sequenceItem.form]);
+      }).length == pipeline.sequence.length;
+      
+      const correctSequenceArguments = pipeline.sequence.filter(sequenceItem => {
+        if(sequenceItem.arguments){
+          const argumentList = Object.keys(sequenceItem.arguments);
+          const branch = this.treeService.getBranchElements(registry, 
+            [sequenceItem.plugin,sequenceItem.module,sequenceItem.form])
+          if(branch){
+            const form = branch[branch.length-1] as FormModel;
+            const formFiledNames = form.fields.map(field => field.name);
+            return argumentList.every(argument => formFiledNames.includes(argument));
+          }
+          else return false;
+        }
+        else return true;
+      }).length == pipeline.sequence.length;  
+
+      return pluginsExist && sequenceFormExists && correctSequenceArguments;
+    });
+    return pipelines;
+  }
+  private injectFormIds(registry: RegistryModel, pipeline: PipelineModel): PipelineModel{
+    for(const sequenceItem of pipeline.sequence){
+      const branch = this.treeService.getBranchElements(registry, [sequenceItem.plugin,sequenceItem.module,sequenceItem.form]);
+      if(branch){
+        const form = branch[2];
+        sequenceItem.formId = form.id;
+      }
+      else{
+        throw Error("injectFromIds - branch not found");
+      }
+    }
+    return pipeline;
+  }
+// For plugins
   private async getValidPluginFolders(dirs: DirEntry[]): Promise<DirEntry[]> {
     return dirs.filter(async plugin => await this.isValidPlugin(plugin.name));
   }
@@ -73,6 +145,7 @@ export default class RegistryService {
   }
   private async createRegistry(plugins: DirEntry[]): Promise<RegistryModel> {
     const registry: RegistryModel = {
+      pipelines: [],
       plugins: []
     }
     for (const plugin of plugins) {
@@ -147,6 +220,7 @@ export default class RegistryService {
 }
 
 const REGISTRY_EXAMPLE: RegistryModel = {
+  pipelines: [],
   plugins: [
     {
       id: "hello1",

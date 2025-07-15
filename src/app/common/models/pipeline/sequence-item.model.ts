@@ -3,5 +3,10 @@ export interface SequenceItemModel{
     module: string,
     form: string,
     formId?: string,
-    arguments: unknown
+    arguments: SequenceItemArgumentModel[]
+}
+export interface SequenceItemArgumentModel{
+    name: string,
+    isBound: boolean,
+    boundTo: string
 }

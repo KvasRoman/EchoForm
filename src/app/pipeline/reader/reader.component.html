@@ -1,38 +1,30 @@
-<div class="common-variables">
-    <div class="wrapper">
-        <ul>
-            <li></li>
-        </ul>
-    </div>
-</div>
-<form action="">
-    @for(sequenceItem of pipeline.sequence; track $index){
+@if(pipeline && pipelineForm){
+<form [formGroup]="pipelineForm">
+    @for(group of pipelineFormModel.groups; track $index){
     <!-- Need to replace with better version of dynamic fileds -->
-    @if(sequenceItem.formId){
+    <h3>{{group.name}}</h3>
     <div>
-        <h3>{{sequenceItem.plugin}} -> {{sequenceItem.module}} -> {{sequenceItem.form}}</h3>
-        @for (field of getFormFields(sequenceItem.formId); track $index) {
+        @for (field of group.fields; track $index) {
         @if(field.type == 'file' || field.type == 'file-output'){
-        <label [for]="field.name">{{field.name}}</label>
+        <label [for]="getFieldFor(group,field)">{{field.name}}</label>
         @if(field.type == 'file-output'){
-        <app-file-input [id]="field.name" [isOutput]="true" type="path" [formControlName]="field.name"
+        <app-file-input [id]="getFieldFor(group,field)" [isOutput]="true" type="path" [formControlName]="getFieldFor(group,field)"
             style="margin-bottom: 10px;"></app-file-input>
         }
         @else {
-        <app-file-input [id]="field.name" [isOutput]="false" type="path" [formControlName]="field.name"
+        <app-file-input [id]="getFieldFor(group,field)" [isOutput]="false" type="path" [formControlName]="getFieldFor(group,field)"
             style="margin-bottom: 10px;"></app-file-input>
         }
         <!-- <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" /> -->
         }
         @else {
-        <label [for]="field.name">{{field.name}}</label>
-        <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" />
+        <label [for]="getFieldFor(group,field)">{{field.name}}</label>
+        <input [id]="getFieldFor(group,field)" [type]="field.type" [formControlName]="getFieldFor(group,field)" style="margin-bottom: 10px;" />
         }
+        
         }
     </div>
     }
-    @else {
-    Error - form fields not found
-    }
-    }
+    
 </form>
+}
