@@ -66,7 +66,7 @@ export class PipelineReaderComponent {
     console.log("pipelineFormForm", this.pipelineForm);
   }
   getFieldFor(group: PipelineFormGroupModel, field: PipelineFormField){
-    return `${group.name}-${field.isBound?field.name:'unbound'}-${field.name}`;
+    return `${group.name}-${field.isBound?field.boundTo:'unbound'}-${field.name}`;
   }
   createFormModel(pipeline: PipelineModel): PipelineFormModel {
     const commonGroup = {
@@ -76,20 +76,25 @@ export class PipelineReaderComponent {
     const sequenceGroups: PipelineFormGroupModel[] = pipeline.sequence.map((sequenceItem, index) => ({
       name: `sequence-${index}`,
       fields: this.getFormFieldsFromSequence(sequenceItem)
-    } as PipelineFormGroupModel))
+    } as PipelineFormGroupModel));
+    console.log("sequence groups",sequenceGroups);
     return {groups: [commonGroup, ...sequenceGroups]} as PipelineFormModel
   }
   createFormFields() {
     if (this.pipeline) {
+      console.log("this.pipelineFormModel",this.pipelineFormModel);
       const commonGroup = this.pipelineFormModel.groups.find(group => group.name.includes("common"));
       const sequenceGroups = this.pipelineFormModel.groups.filter(group => group.name.includes("sequence"));
       let commonFields = undefined;
       if(commonGroup)
         commonFields = Object.fromEntries(commonGroup.fields
       .map(field => [`${commonGroup.name}-${"unbound"}-${field.name}`,""]))
-      let sequenceFields = Object.fromEntries(sequenceGroups
+      const sequenceFieldsArray = sequenceGroups
         .map(group => group.fields
-          .map(field => [`${group.name}-${field.isBound?field.boundTo:"unbound"}-${field.name}`,""])))
+          .map(field => [`${group.name}-${field.isBound?field.boundTo:"unbound"}-${field.name}`,""]))
+          .reduce((accumulator, current) => accumulator.concat(current), []);
+      console.log("sArray",sequenceFieldsArray);
+      let sequenceFields = Object.fromEntries(sequenceFieldsArray);
       return { ...commonFields, ...sequenceFields };
     }
   }
