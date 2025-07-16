@@ -40,7 +40,6 @@ export class RegistryComponent {
     this.formService.setActiveBranch(branch!)
     this.formService.setActiveForm((node as FormModel));
     this.router.navigate(['form']);
-    console.log("branch", branch);
   }
   onPipelineLeafClick($event: any, node: PipelineModel){
     $event.preventDefault();
@@ -48,7 +47,6 @@ export class RegistryComponent {
     this.pipelineService.setActivePipeline(node);
 
     this.router.navigate(['pipeline','reader'])
-    console.log("pipeline", node);
   }
   constructor(
     private treeService: TreeService, 

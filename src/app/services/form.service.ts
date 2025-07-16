@@ -23,7 +23,6 @@ export class FormService{
         this.formSubject.next(form);
     }
     setActiveBranch(branch: RegistryNodeModel<unknown>[]){
-        console.log('new branch', branch);
         this.branchSubject.next(branch);
     }
 }

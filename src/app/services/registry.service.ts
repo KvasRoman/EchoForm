@@ -45,10 +45,8 @@ export default class RegistryService {
     this.loadPipelines(registry);
 
     this.updatePluginFiles(registry);
-    console.log("registry", registry);
     this._registrySubject.next(registry);
 
-    console.log("dirr", dirs);
   }
 // For pipelines
   private async loadPipelines(registry: RegistryModel){
@@ -151,10 +149,6 @@ export default class RegistryService {
     for (const plugin of plugins) {
       let p = this.injectChildren(await this.createPlugin(plugin));
       registry.plugins.push(p)
-      console.log("p", JSON.stringify(p, (key, value) => {
-        if (key === 'children') return undefined;
-        return value;
-      }));
     }
 
     return registry;

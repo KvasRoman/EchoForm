@@ -33,7 +33,6 @@ export class PipelineReaderComponent {
 
       this.pipeline = pipeline;
       this.updatePipelineForm();
-      console.log("pipeline from subscription", this.pipeline);
     });
 
   }
@@ -61,9 +60,7 @@ export class PipelineReaderComponent {
   }
   updatePipelineForm() {
     this.pipelineFormModel = this.createFormModel(this.pipeline);
-    console.log("pipelineForm", this.pipelineFormModel);
     this.pipelineForm = this.fb.group(this.createFormFields());
-    console.log("pipelineFormForm", this.pipelineForm);
   }
   getFieldFor(group: PipelineFormGroupModel, field: PipelineFormField){
     return `${group.name}-${field.isBound?field.boundTo:'unbound'}-${field.name}`;
@@ -77,12 +74,10 @@ export class PipelineReaderComponent {
       name: `sequence-${index}`,
       fields: this.getFormFieldsFromSequence(sequenceItem)
     } as PipelineFormGroupModel));
-    console.log("sequence groups",sequenceGroups);
     return {groups: [commonGroup, ...sequenceGroups]} as PipelineFormModel
   }
   createFormFields() {
     if (this.pipeline) {
-      console.log("this.pipelineFormModel",this.pipelineFormModel);
       const commonGroup = this.pipelineFormModel.groups.find(group => group.name.includes("common"));
       const sequenceGroups = this.pipelineFormModel.groups.filter(group => group.name.includes("sequence"));
       let commonFields = undefined;
@@ -93,17 +88,8 @@ export class PipelineReaderComponent {
         .map(group => group.fields
           .map(field => [`${group.name}-${field.isBound?field.boundTo:"unbound"}-${field.name}`,""]))
           .reduce((accumulator, current) => accumulator.concat(current), []);
-      console.log("sArray",sequenceFieldsArray);
       let sequenceFields = Object.fromEntries(sequenceFieldsArray);
       return { ...commonFields, ...sequenceFields };
     }
   }
-  // updateFromModel(){
-
-  //   let formFields = Object.fromEntries(
-  //     this.formModel!.fields.map(field => [field.name, ""])
-  //   );
-  //   console.log("fields", formFields);
-  //   this.dynamicForm = this.fb.group(formFields);
-  // }
 }

@@ -31,7 +31,6 @@ export class FormComponent implements OnInit {
     this.activeFormSub = this.formService.activeFrom;
     this.activeFormSub.subscribe(form => {
       this.formModel = form;
-      console.log('form',form);
       if(form)
         this.updateFromModel();
     });
@@ -49,12 +48,10 @@ export class FormComponent implements OnInit {
     let formFields = Object.fromEntries(
       this.formModel!.fields.map(field => [field.name, ""])
     );
-    console.log("fields", formFields);
     this.dynamicForm = this.fb.group(formFields);
   }
   onSubmit(){
     
-    console.log("branch11",this.branch);
     const pluginName = (this.branch[0] as PluginModel).name;
     const executable = `${this.registryService.pluginDirectory}/${pluginName}/${pluginName}.exe`;
     const module = (this.branch[1] as ModuleModel).name;
