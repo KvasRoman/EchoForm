@@ -9,5 +9,6 @@ export interface PipelineFormGroupModel{
     fields: PipelineFormField[]
 }
 export interface PipelineFormField extends SequenceItemArgumentModel, FieldModel{
-    boundToField?: PipelineFormField
+    boundToField?: PipelineFormField;
+    commonKey?: string; // <-- fields with the same key share the same value
 }

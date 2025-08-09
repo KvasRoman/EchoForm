@@ -1,30 +1,112 @@
-@if(pipeline && pipelineForm){
-<form [formGroup]="pipelineForm">
+<!-- @if(pipeline && pipelineForm){
+<form [formGroup]="pipelineForm" (ngSubmit)="onSubmit()">
+
     @for(group of pipelineFormModel.groups; track $index){
-    <!-- Need to replace with better version of dynamic fileds -->
+    
     <h3>{{group.name}}</h3>
     <div>
         @for (field of group.fields; track $index) {
         @if(field.type == 'file' || field.type == 'file-output'){
         <label [for]="getFieldFor(group,field)">{{field.name}}</label>
         @if(field.type == 'file-output'){
-        <app-file-input [id]="getFieldFor(group,field)" [isOutput]="true" type="path" [formControlName]="getFieldFor(group,field)"
+        <app-file-input [id]="getFieldFor(group,field)" [disabled]="field.isBound && group.name != 'common'" [isOutput]="true" type="path" [formControlName]="getFieldFor(group,field)"
             style="margin-bottom: 10px;"></app-file-input>
         }
         @else {
-        <app-file-input [id]="getFieldFor(group,field)" [isOutput]="false" type="path" [formControlName]="getFieldFor(group,field)"
+        <app-file-input [id]="getFieldFor(group,field)" [disabled]="field.isBound && group.name != 'common'" [isOutput]="false" type="path" [formControlName]="getFieldFor(group,field)"
             style="margin-bottom: 10px;"></app-file-input>
         }
-        <!-- <input [id]="field.name" [type]="field.type" [formControlName]="field.name" style="margin-bottom: 10px;" /> -->
         }
         @else {
         <label [for]="getFieldFor(group,field)">{{field.name}}</label>
-        <input [id]="getFieldFor(group,field)" [type]="field.type" [formControlName]="getFieldFor(group,field)" style="margin-bottom: 10px;" />
+        <input [id]="getFieldFor(group,field)" [type]="field.type" [disabled]="field.isBound && group.name != 'common'" [formControlName]="getFieldFor(group,field)" style="margin-bottom: 10px;" />
         }
         
         }
     </div>
     }
-    
+    <button type="submit">Submit</button>
 </form>
+} -->
+@if (pipeline && pipelineForm) {
+  <form [formGroup]="pipelineForm" (ngSubmit)="onSubmit()">
+
+    <!-- Optional small overview of common variables -->
+    @if (pipeline?.variables?.common?.length) {
+      <div>
+        <h4>Common variables</h4>
+        <ul>
+          @for (v of pipeline.variables.common; track v.name) {
+            <li>{{ v.name }}: {{ commonValues.get$(v.name) | async }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @for (group of pipelineFormModel.groups; track $index) {
+      <h3>{{ group.name }}</h3>
+      <div>
+        @for (field of group.fields; track $index) {
+
+          @if (field.type == 'file' || field.type == 'file-output') {
+            <label [for]="getFieldFor(group, field)">
+              {{ field.name }}
+            </label>
+
+            <!-- Shared marker + live value -->
+            @if (field.isBound && field.boundTo) {
+              <span>
+                [shared: {{ field.boundTo }} → {{ (commonValues.get$(field.boundTo) | async) ?? '' }}]
+              </span>
+            }
+
+            @if (field.type == 'file-output') {
+              <!-- outputs are not editable -->
+              <app-file-input
+                [id]="getFieldFor(group, field)"
+                [isOutput]="true"
+                type="path"
+                [disabled]="true"
+                [formControlName]="getFieldFor(group, field)"
+                style="margin-bottom: 10px;">
+              </app-file-input>
+            } @else {
+              <!-- editable only in 'common' group if shared -->
+              <app-file-input
+                [id]="getFieldFor(group, field)"
+                [isOutput]="false"
+                type="path"
+                [disabled]="field.isBound && group.name != 'common'"
+                [formControlName]="getFieldFor(group, field)"
+                style="margin-bottom: 10px;">
+              </app-file-input>
+            }
+
+          } @else {
+            <label [for]="getFieldFor(group, field)">
+              {{ field.name }}
+            </label>
+
+            <!-- Shared marker + live value -->
+            @if (field.isBound && field.boundTo) {
+              <span>
+                [shared: {{ field.boundTo }} → {{ (commonValues.get$(field.boundTo) | async) ?? '' }}]
+              </span>
+            }
+
+            <!-- Use readOnly so value remains in form.value -->
+            <input
+              [id]="getFieldFor(group, field)"
+              [type]="field.type"
+              [readOnly]="field.isBound && group.name != 'common'"
+              [formControlName]="getFieldFor(group, field)"
+              style="margin-bottom: 10px;" />
+          }
+
+        }
+      </div>
+    }
+
+    <button type="submit">Submit</button>
+  </form>
 }

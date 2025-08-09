@@ -10,11 +10,13 @@ import TreeService from '../../services/tree.service';
 import { RegistryModel } from '../../common/models/registry.model';
 import { FormModel } from '../../common/models/form.model';
 import { PipelineFormField, PipelineFormGroupModel, PipelineFormModel } from '../../common/models/pipeline/pipeline-form.model';
-
+import { CommonValueService } from '../../services/common-value.service';
+import { skip, Subscription } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
 @Component({
   selector: 'app-pipeline-reader',
   standalone: true,
-  imports: [FileInputComponent, ReactiveFormsModule],
+  imports: [FileInputComponent, ReactiveFormsModule, AsyncPipe],
   templateUrl: './reader.component.html',
   styleUrl: './reader.component.css'
 })
@@ -22,8 +24,13 @@ export class PipelineReaderComponent {
   pipeline: PipelineModel;
   pipelineForm: FormGroup;
   registry: RegistryModel;
+  private _commonSubs: Subscription[] = [];
   pipelineFormModel: PipelineFormModel;
-  constructor(private fb: FormBuilder, private pipelineService: PipelineService, private registryService: RegistryService, private treeService: TreeService) {
+  constructor(private fb: FormBuilder,
+    public commonValues: CommonValueService, 
+    private pipelineService: PipelineService, 
+    private registryService: RegistryService, 
+    private treeService: TreeService) {
     registryService.registry.subscribe(registry => {
       this.registry = registry;
     })
@@ -32,10 +39,18 @@ export class PipelineReaderComponent {
       if (!pipeline) return;
 
       this.pipeline = pipeline;
+      this.initCommonVariables(pipeline);
       this.updatePipelineForm();
     });
 
   }
+  private initCommonVariables(pipeline: PipelineModel) {
+  const commons = pipeline?.variables?.common ?? [];
+  for (const v of commons) {
+    // ensure bucket exists; initial value is undefined unless you want defaults
+    this.commonValues.ensure(v.name);
+  }
+}
   getFormFieldsFromSequence(sequenceItem: SequenceItemModel): PipelineFormField[] {
     const pluginBranch = this.treeService.getBranchElements(this.registry,
       [sequenceItem.plugin, sequenceItem.module, sequenceItem.form]);
@@ -60,7 +75,15 @@ export class PipelineReaderComponent {
   }
   updatePipelineForm() {
     this.pipelineFormModel = this.createFormModel(this.pipeline);
-    this.pipelineForm = this.fb.group(this.createFormFields());
+    const controlsConfig = this.createFormFields();
+    this.pipelineForm = this.fb.group(controlsConfig);
+
+    for (const group of this.pipelineFormModel.groups) {
+    for (const field of group.fields) {
+      const controlName = this.getFieldFor(group, field);
+      this.wireCommonBinding(this.pipelineForm, controlName, field);
+    }
+  }
   }
   getFieldFor(group: PipelineFormGroupModel, field: PipelineFormField){
     return `${group.name}-${field.isBound?field.boundTo:'unbound'}-${field.name}`;
@@ -92,4 +115,105 @@ export class PipelineReaderComponent {
       return { ...commonFields, ...sequenceFields };
     }
   }
+   private wireCommonBinding(group: FormGroup, controlName: string, field: PipelineFormField) {
+    // uses your existing schema: isBound + boundTo
+    if (!field?.isBound || !field?.boundTo) return;
+
+    const control = group.get(controlName);
+    if (!control) return;
+
+    // Initial sync
+    const existing = this.commonValues.peek(field.boundTo);
+    if (existing !== undefined) {
+      control.setValue(existing, { emitEvent: false });
+    } else {
+      this.commonValues.set(field.boundTo, control.value);
+    }
+
+    // registry -> control
+    const s1 = this.commonValues.get$(field.boundTo).subscribe(v => {
+      if (control.value !== v) control.setValue(v, { emitEvent: false });
+    });
+
+    // control -> registry
+    const s2 = control.valueChanges.pipe(skip(1)).subscribe(v => {
+      this.commonValues.set(field.boundTo!, v);
+    });
+
+    this._commonSubs.push(s1, s2);
+  }
+
+  private buildGroup(g: PipelineFormGroupModel): FormGroup {
+  const group = this.fb.group({});
+  for (const field of g.fields) {
+    const controlName = field.name; // or your existing getFieldFor(...)
+    // create the control as you already do (with validators/defaults)
+    group.addControl(controlName, this.fb.control(''));
+    // >>> ADD:
+    this.wireCommonBinding(group, controlName, field as PipelineFormField);
+  }
+  return group;
+}
+decomposeForm() {
+  if (!this.pipeline || !this.pipelineForm || !this.pipelineFormModel) return;
+
+  const raw = this.pipelineForm.getRawValue(); // includes disabled
+  const result: {
+    variables: { common: Record<string, unknown> };
+    sequence: Array<{ arguments: Array<{ name: string; isBound: boolean; boundTo?: string; value: unknown }> }>;
+  } = {
+    variables: { common: {} },
+    sequence: (this.pipeline.sequence ?? []).map(() => ({ arguments: [] })),
+  };
+
+  // 1) collect all field values; for the common group prefer boundTo as key
+  for (const group of this.pipelineFormModel.groups) {
+    for (const field of group.fields) {
+      const cn = this.getFieldFor(group, field);
+      const controlVal = raw[cn];
+
+      if (group.name === 'common') {
+        const key = field.boundTo || field.name;
+        result.variables.common[key] = controlVal;
+      } else {
+        const idx = this.parseSequenceIndex(group.name);
+        if (idx != null) {
+          if (!result.sequence[idx]) result.sequence[idx] = { arguments: [] };
+
+          // 2) for bound args use the common value (controls may be disabled/empty)
+          const value =
+            field.isBound && field.boundTo
+              ? (result.variables.common[field.boundTo] ??
+                 this.commonValues.peek(field.boundTo) ??   // fall back to live bucket
+                 controlVal)                            // final fallback
+              : controlVal;
+
+          result.sequence[idx].arguments.push({
+            name: field.name,
+            isBound: !!field.isBound,
+            boundTo: field.isBound ? field.boundTo : undefined,
+            value,
+          });
+        }
+      }
+    }
+  }
+
+  console.log('decomposed', result);
+  return result;
+}
+
+private parseSequenceIndex(name: string): number | null {
+  const m = name?.match(/sequence[-_](\d+)/i);
+  return m ? Number(m[1]) : null;
+}
+
+
+  onSubmit(){
+    console.log("submit", this.pipelineForm.value);
+    this.decomposeForm();
+  }
+  ngOnDestroy() {
+  this._commonSubs.forEach(s => s.unsubscribe());
+}
 }
