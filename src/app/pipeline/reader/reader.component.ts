@@ -13,6 +13,7 @@ import { PipelineFormField, PipelineFormGroupModel, PipelineFormModel } from '..
 import { CommonValueService } from '../../services/common-value.service';
 import { skip, Subscription } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
+import { CommandService } from '../../services/command.service';
 @Component({
   selector: 'app-pipeline-reader',
   standalone: true,
@@ -27,7 +28,8 @@ export class PipelineReaderComponent {
   private _commonSubs: Subscription[] = [];
   pipelineFormModel: PipelineFormModel;
   constructor(private fb: FormBuilder,
-    public commonValues: CommonValueService, 
+    public commonValues: CommonValueService,
+    private commandService: CommandService,
     private pipelineService: PipelineService, 
     private registryService: RegistryService, 
     private treeService: TreeService) {
@@ -202,7 +204,39 @@ decomposeForm() {
   console.log('decomposed', result);
   return result;
 }
+async runPipelineNow(decomposed: any) {
+  if (!this.pipeline || !this.pipeline.sequence?.length) return;
 
+  // Use decomposed values (includes bound/common & disabled via getRawValue())
+  if (!decomposed) return;
+
+  // Run steps sequentially
+  for (let i = 0; i < this.pipeline.sequence.length; i++) {
+    const item = this.pipeline.sequence[i];                 // SequenceItemModel
+    const stepVals = decomposed.sequence[i];                // { arguments: [...] }
+    const args = this.stepArgsArray(stepVals);              // string[]
+
+    // Build executable path like in form.component.ts
+    const pluginName = item.plugin;
+    const executable = `${this.registryService.pluginDirectory}/${pluginName}/${pluginName}.exe`;
+    const moduleName = item.module;
+    const commandName = item.form;
+
+    try {
+      await this.commandService.Execute(executable, moduleName, [commandName, ...args]);
+      // If your command returns outputs to write back to commons, handle it here.
+      // e.g., if Execute returns something: const out = await ...
+      // if (out?.common) for (const [k,v] of Object.entries(out.common)) this.common.set(k, v);
+    } catch (err) {
+      console.error(`Step ${i + 1} failed`, err);
+      break; // or continue; depending on desired behavior
+    }
+  }
+}
+private stepArgsArray(step: { arguments: Array<{ name: string; value: unknown }> }): string[] {
+  // preserve original order of step.arguments
+  return step.arguments.map(a => (a.value ?? '').toString());
+}
 private parseSequenceIndex(name: string): number | null {
   const m = name?.match(/sequence[-_](\d+)/i);
   return m ? Number(m[1]) : null;
@@ -211,7 +245,8 @@ private parseSequenceIndex(name: string): number | null {
 
   onSubmit(){
     console.log("submit", this.pipelineForm.value);
-    this.decomposeForm();
+    const decomposed = this.decomposeForm();
+    this.runPipelineNow(decomposed);
   }
   ngOnDestroy() {
   this._commonSubs.forEach(s => s.unsubscribe());
