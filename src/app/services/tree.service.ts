@@ -41,19 +41,23 @@ export default class TreeService {
         path.push(node);
 
         if (node.id === target) {
-            return [...path];
+    const out = [...path];
+    path.pop();                   
+    return out;
         }
 
         if (node.children) {
             for (const child of node.children) {
                 const result = this.findPathByID(child, target, path);
                 if (result) {
-                    return result;
+        path.pop();              
+        return result;
                 }
             }
         }
         
-        return null;
+  path.pop();                   
+  return null;
     }
     private findPath(node: RegistryNodeModel<any>, target: RegistryNodeModel<unknown>, path: RegistryNodeModel<unknown>[]): RegistryNodeModel<unknown>[] | null {
         if (!node) return null;
@@ -61,18 +65,22 @@ export default class TreeService {
         path.push(node);
 
         if (node.id === target.id) {
-            return [...path];
+    const out = [...path];
+    path.pop();
+    return out;
         }
 
         if (node.children) {
             for (const child of node.children) {
                 const result = this.findPath(child, target, path);
                 if (result) {
-                    return result;
+        path.pop();
+        return result;
                 }
             }
         }
         
-        return null;
+  path.pop();
+  return null;
     }
 }
