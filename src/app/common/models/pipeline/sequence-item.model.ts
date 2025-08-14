@@ -8,5 +8,6 @@ export interface SequenceItemModel{
 export interface SequenceItemArgumentModel{
     name: string,
     isBound: boolean,
-    boundTo: string
+    boundTo?: string,
+    default?: unknown,
 }
